@@ -166,7 +166,6 @@ function personality_modules
 
 add_test_type shadedjars
 
-
 function shadedjars_initialize
 {
   yetus_debug "initializing shaded client checks."
@@ -472,6 +471,15 @@ function mvnsite_filefilter
       add_test mvnsite
     fi
   fi
+}
+
+## @description  Add EXCLUDE_TESTS_URL and INCLUDE_TESTS_URL to docker env.
+## @audience     private
+## @stability    evolving
+function unit_docker_support
+{
+  DOCKER_EXTRAARGS=("${DOCKER_EXTRAARGS[@]}" "--env=EXCLUDE_TESTS_URL=${EXCLUDE_TESTS_URL}")
+  DOCKER_EXTRAARGS=("${DOCKER_EXTRAARGS[@]}" "--env=INCLUDE_TESTS_URL=${INCLUDE_TESTS_URL}")
 }
 
 ## This is named so that yetus will check us right after running tests.

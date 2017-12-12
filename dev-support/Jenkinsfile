@@ -114,44 +114,6 @@ curl -L  -o personality.sh "${env.PROJET_PERSONALITY}"
         stash name: 'yetus', includes: "yetus-*/*,yetus-*/**/*,tools/personality.sh"
       }
     }
-    stage ('yetus general check') {
-      environment {
-        // TODO does hadoopcheck need to be jdk specific?
-        // Should be things that work with multijdk
-        TESTS = 'all,-unit,-findbugs'
-        // on branches that don't support jdk7, this will already be JAVA_HOME, so we'll end up not
-        // doing multijdk there.
-        MULTIJDK = '/usr/lib/jvm/java-8-openjdk-amd64'
-        OUTPUT_RELATIVE = "${env.OUTPUT_RELATIVE_GENERAL}"
-        OUTPUTDIR = "${env.OUTPUTDIR_GENERAL}"
-      }
-      steps {
-        unstash 'yetus'
-        sh '''#!/usr/bin/env bash
-          rm -rf "${OUTPUTDIR}" && mkdir "${OUTPUTDIR}"
-          rm -rf "${OUTPUTDIR}/machine" && mkdir "${OUTPUTDIR}/machine"
-          "${BASEDIR}/dev-support/gather_machine_environment.sh" "${OUTPUT_RELATIVE}/machine"
-'''
-        // TODO should this be a download from master, similar to how the personality is?
-        sh "${env.BASEDIR}/dev-support/hbase_nightly_yetus.sh"
-      }
-      post {
-        always {
-          // env variables don't work in archive? or this has to be relative to WORKSPACE. :(
-          archive 'output-general/*'
-          archive 'output-general/**/*'
-          publishHTML target: [
-            allowMissing: true,
-            keepAll: true,
-            alwaysLinkToLastBuild: true,
-            // has to be relative to WORKSPACE :(
-            reportDir: 'output-general',
-            reportFiles: 'console-report.html',
-            reportName: 'General Nightly Build Report'
-          ]
-        }
-      }
-    }
     stage ('yetus jdk7 checks') {
       when {
         branch 'branch-1*'
