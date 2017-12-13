@@ -42,7 +42,7 @@ pipeline {
     OUTPUT_RELATIVE_JDK8 = 'output-jdk8'
     OUTPUTDIR_JDK8 = "${env.WORKSPACE}/output-jdk8"
     PROJECT = 'hbase'
-    PROJET_PERSONALITY = 'https://raw.githubusercontent.com/apache/hbase/master/dev-support/hbase-personality.sh'
+    PROJET_PERSONALITY = 'https://raw.githubusercontent.com/apache/hbase/HBASE-19491/dev-support/hbase-personality.sh'
     // This section of the docs tells folks not to use the javadoc tag. older branches have our old version of the check for said tag.
     AUTHOR_IGNORE_LIST = 'src/main/asciidoc/_chapters/developer.adoc,dev-support/test-patch.sh'
     WHITESPACE_IGNORE_LIST = '.*/generated/.*'

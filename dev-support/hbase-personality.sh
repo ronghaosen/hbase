@@ -78,6 +78,8 @@ function personality_modules
   local testtype=$2
   local extra=""
 
+  yetus_info "CHANGED_MODULES=${CHANGED_MODULES[@]}"
+  yetus_info "Personality: ${repostatus} ${testtype}"
   yetus_debug "Personality: ${repostatus} ${testtype}"
 
   clear_personality_queue
@@ -480,6 +482,7 @@ function unit_docker_support
 {
   DOCKER_EXTRAARGS=("${DOCKER_EXTRAARGS[@]}" "--env=EXCLUDE_TESTS_URL=${EXCLUDE_TESTS_URL}")
   DOCKER_EXTRAARGS=("${DOCKER_EXTRAARGS[@]}" "--env=INCLUDE_TESTS_URL=${INCLUDE_TESTS_URL}")
+  yetus_info "DOCKER_EXTRAARGS=${DOCKER_EXTRAARGS[@]}"
 }
 
 ## This is named so that yetus will check us right after running tests.
