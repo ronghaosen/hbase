@@ -64,7 +64,26 @@ function personality_globals
 
   # Override the maven options
   MAVEN_OPTS="${MAVEN_OPTS:-"-Xmx3100M"}"
+}
 
+## @description  Parse extra arguments required by personalities, if any.
+## @audience     private
+## @stability    evolving
+function personality_parse_args
+{
+  declare i
+  yetus_info "params=" "$@"
+
+  for i in "$@"; do
+    case ${i} in
+      --exclude-tests-url=*)
+        EXCLUDE_TESTS_URL=${i#*=}
+      ;;
+      --include-tests-url=*)
+        INCLUDE_TESTS_URL=${i#*=}
+      ;;
+    esac
+  done
 }
 
 ## @description  Queue up modules for this personality
@@ -80,18 +99,19 @@ function personality_modules
 
   yetus_info "CHANGED_MODULES=${CHANGED_MODULES[@]}"
   yetus_info "Personality: ${repostatus} ${testtype}"
-  yetus_debug "Personality: ${repostatus} ${testtype}"
+  yetus_info "BUILDMODE=${BUILDMODE}"
 
   clear_personality_queue
 
   extra="-DHBasePatchProcess"
 
   if [[ ${testtype} == mvninstall ]] || [[ "${BUILDMODE}" == full ]]; then
+    yetus_info "inside mvn install"
     personality_enqueue_module . ${extra}
     return
   fi
 
-  if [[ ${testtype} = findbugs ]]; then
+  if [[ ${testtype} == findbugs ]]; then
     for module in "${CHANGED_MODULES[@]}"; do
       # skip findbugs on hbase-shell and hbase-it. hbase-it has nothing
       # in src/main/java where findbugs goes to look
@@ -110,17 +130,19 @@ function personality_modules
   # If EXCLUDE_TESTS_URL/INCLUDE_TESTS_URL is set, fetches the url
   # and sets -Dtest.exclude.pattern/-Dtest to exclude/include the
   # tests respectively.
-  if [[ ${testtype} = unit ]]; then
+  yetus_info "before unit"
+  if [[ ${testtype} == unit ]]; then
+    yetus_info "inside unit"
     # if the modules include root, skip all the submodules HBASE-18505
     if [[ "${CHANGED_MODULES[*]}" =~ \. ]]; then
       CHANGED_MODULES=(.)
     fi
 
     extra="${extra} -PrunAllTests"
-    yetus_debug "EXCLUDE_TESTS_URL = ${EXCLUDE_TESTS_URL}"
-    yetus_debug "INCLUDE_TESTS_URL = ${INCLUDE_TESTS_URL}"
-    if [[ -n "$EXCLUDE_TESTS_URL" ]]; then
-        if wget "$EXCLUDE_TESTS_URL" -O "excludes"; then
+    yetus_info "EXCLUDE_TESTS_URL = ${EXCLUDE_TESTS_URL}"
+    yetus_info "INCLUDE_TESTS_URL = ${INCLUDE_TESTS_URL}"
+    if [[ -n "${EXCLUDE_TESTS_URL}" ]]; then
+        if wget "${EXCLUDE_TESTS_URL}" -O "excludes"; then
           excludes=$(cat excludes)
           yetus_debug "excludes=${excludes}"
           if [[ -n "${excludes}" ]]; then
@@ -152,6 +174,7 @@ function personality_modules
     fi
   fi
 
+  yetus_info "after unit"
   for module in "${CHANGED_MODULES[@]}"; do
     # shellcheck disable=SC2086
     personality_enqueue_module ${module} ${extra}
